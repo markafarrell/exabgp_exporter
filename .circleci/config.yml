@@ -98,8 +98,7 @@ jobs:
       - run:
           name: github-release
           command: |
-            VERSION=$(cat .build/version)
-            ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -delete ${VERSION} .tarballs/
+            ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -delete ${CIRCLE_TAG} .tarballs/
   build_docker_image:
     machine:
       enabled: true
