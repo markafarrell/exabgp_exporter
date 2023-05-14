@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/lusis/exabgp_exporter/pkg/exabgp/messages"
+	"github.com/gizmoguy/exabgp_exporter/pkg/exabgp/messages"
 )
 
 var lastStatus *status

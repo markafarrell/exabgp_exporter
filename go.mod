@@ -1,4 +1,4 @@
-module github.com/lusis/exabgp_exporter
+module github.com/gizmoguy/exabgp_exporter
 
 go 1.12
 

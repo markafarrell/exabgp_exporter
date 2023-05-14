@@ -4,4 +4,4 @@ set -Eeuo pipefail
 # shellcheck disable=SC1091
 source script/env
 
-docker run --rm -d --name exabgp_exporter -e EXABGP_VERSION="${EXABGP_VERSION}" -t lusis-exabgp_exporter
+docker run --rm -d --name exabgp_exporter -e EXABGP_VERSION="${EXABGP_VERSION}" -t exabgp_exporter
