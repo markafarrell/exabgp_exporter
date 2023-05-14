@@ -13,11 +13,11 @@ get_peer_metrics() {
 }
 
 stop_gobgpd() {
-	docker exec exabgp_exporter s6-svc -d /var/run/s6/services/gobgp
+	docker exec exabgp_exporter /package/admin/s6/command/s6-svc -d /run/service/gobgp
 }
 
 start_gobgpd() {
-	docker exec exabgp_exporter s6-svc -u /var/run/s6/services/gobgp
+	docker exec exabgp_exporter /package/admin/s6/command/s6-svc -u /run/service/gobgp
 }
 
 withdraw_routes() {

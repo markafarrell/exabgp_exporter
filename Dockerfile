@@ -4,6 +4,8 @@ FROM golang:alpine AS build-env
 FROM golang:alpine
 ENV CGO_ENABLED 0
 ENV EXABGP_VERSION 4.0.10
+ENV GOBGP_VERSION 3.14.0
+ENV S6_OVERLAY_VERSION 3.1.5.0
 ENV HOME /root
 ENV S6_LOGGING 1
 WORKDIR /root
@@ -22,13 +24,16 @@ COPY docker/files/rsyslog.conf /etc/rsyslog.conf
 COPY docker/*.sh /root/
 
 # add support packages
-ADD https://github.com/osrg/gobgp/releases/download/v2.3.0/gobgp_2.3.0_linux_amd64.tar.gz /gobgp.tar.gz
-ADD https://github.com/just-containers/s6-overlay-builder/releases/download/v1.8.5/s6-overlay-portable-amd64.tar.gz /tmp/
+ADD https://github.com/osrg/gobgp/releases/download/v${GOBGP_VERSION}/gobgp_${GOBGP_VERSION}_linux_amd64.tar.gz /gobgp.tar.gz
+ADD https://github.com/just-containers/s6-overlay/releases/download/v${S6_OVERLAY_VERSION}/s6-overlay-noarch.tar.xz /tmp
+ADD https://github.com/just-containers/s6-overlay/releases/download/v${S6_OVERLAY_VERSION}/s6-overlay-x86_64.tar.xz /tmp
 
 # install support packages
 RUN tar xvf /gobgp.tar.gz -C /gobgp/
-RUN tar xzf /tmp/s6-overlay-portable-amd64.tar.gz -C /
+RUN tar -C / -Jxpf /tmp/s6-overlay-noarch.tar.xz
+RUN tar -C / -Jxpf /tmp/s6-overlay-x86_64.tar.xz
 
+RUN mkdir /etc/services.d/
 RUN mkdir /etc/services.d/gobgp
 RUN mkdir /etc/services.d/exabgp
 RUN mkdir /etc/services.d/exabgp_exporter_good
