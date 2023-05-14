@@ -1,0 +1,92 @@
+---
+name: Tests
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  codechecks:
+    name: Code checks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Lint
+        uses: golangci/golangci-lint-action@v3
+
+  unit-tests:
+    name: Unit tests
+    runs-on: ubuntu-latest
+    env:
+      TEST_RESULTS: "/tmp/test-results"
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+
+      - name: Coverage
+        run: script/coverage
+
+      - name: Prepare environment
+        run: |-
+          git config --global --add safe.directory "${GITHUB_WORKSPACE}"
+          mkdir -p ${TEST_RESULTS}
+          go install github.com/jstemmer/go-junit-report@latest
+
+      - name: Run tests
+        run: |-
+          trap "go-junit-report <${TEST_RESULTS}/go-test.out > ${TEST_RESULTS}/go-test-report.xml" EXIT
+          script/test | tee ${TEST_RESULTS}/go-test.out
+
+      - uses: actions/upload-artifact@v3
+        with:
+          path: "/tmp/test-results"
+
+  integration-tests:
+    name: Integration tests
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        exabgp_version:
+          - "4.2.21"
+          - "4.2.17"
+          - "4.2.8"
+          - "4.2.4"
+          - "4.0.8"
+    env:
+      EXABGP_VERSION: ${{ matrix.exabgp_version }}
+      TEST_RESULTS: "/tmp/test-results"
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Prepare environment
+        run: |-
+          git config --global --add safe.directory "${GITHUB_WORKSPACE}"
+          mkdir -p ${TEST_RESULTS}
+
+      - name: Build docker image
+        run: script/build-docker
+
+      - name: Run docker container
+        run: script/run-docker
+
+      - name: Wait for docker container
+        run: sleep 30
+
+      - name: Run tests
+        run: |-
+          trap "docker logs exabgp_exporter > ${TEST_RESULTS}/docker-${EXABGP_VERSION}.log" EXIT
+          test/libs/bats/bin/bats test/*.bats
+
+      - name: Stop docker container
+        run: script/stop-docker
+
+      - uses: actions/upload-artifact@v3
+        with:
+          path: "/tmp/test-results"

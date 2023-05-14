@@ -1,0 +1,32 @@
+---
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - id: exabgp_exporter
+    binary: exabgp_exporter
+    main: ./cmd/exabgp_exporter
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+    tags:
+      - netgo
+    ldflags:
+      - >
+        -s
+        -X "github.com/prometheus/common/version.Version={{.Version}}"
+        {{- if index .Env "GITHUB_REF_NAME" }}
+        -X "github.com/prometheus/common/version.Revision={{ .Env.GITHUB_SHA }}"
+        -X "github.com/prometheus/common/version.Branch={{ .Env.GITHUB_REF_NAME }}"
+        -X "github.com/prometheus/common/version.BuildUser={{ .Env.BUILD_USER }}"
+        -X "github.com/prometheus/common/version.BuildDate={{ .Env.BUILD_DATE }}"
+        {{- end }}
+
+checksum:
+  name_template: 'checksums.txt'
+
+# yaml-language-server: $schema=https://goreleaser.com/static/schema.json
+# vim: set ts=2 sw=2 tw=0 fo=cnqoj
