@@ -14,6 +14,8 @@ RUN mkdir -p /gobgp
 RUN mkfifo /exabgp/run/exabgp.in
 RUN mkfifo /exabgp/run/exabgp.out
 RUN chmod 666 /exabgp/run/exabgp.*
+RUN mkfifo /exabgp/exabgp.cmd
+RUN chmod 666 /exabgp/exabgp.cmd
 COPY docker/files/exabgp.conf /exabgp/etc/exabgp/exabgp.conf
 COPY docker/files/gobgp.yaml /gobgp/gobgp.yaml
 COPY docker/files/rsyslog.conf /etc/rsyslog.conf
