@@ -2,11 +2,13 @@
 load 'common'
 
 @test "verify peer_state is captured - embedded" {
+  sleep 5
   run get_peer_metrics
   assert_line --regexp '^exabgp_state_peer\{.*\} [0|1]$'
 }
 
 @test "verify peer_state is captured - standalone" {
+  sleep 5
   run get_peer_metrics 9570
   assert_line --regexp '^exabgp_state_peer\{.*\} [0|1]$'
 }
