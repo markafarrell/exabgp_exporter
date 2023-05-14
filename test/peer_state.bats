@@ -21,6 +21,9 @@ load 'common'
 }
 
 @test "verify peer_state is down - standalone" {
+  if [[ $(get_exabgp_version) == "4.2."* ]]; then
+    skip "exabgp 4.2.x doesn't report down peers in exabgpcli (issue #996)"
+  fi
   run stop_gobgpd
   sleep 2
   run get_peer_metrics 9570

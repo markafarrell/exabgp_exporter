@@ -2,6 +2,10 @@ load 'libs/bats-support/load'
 load 'libs/bats-assert/load'
 
 
+get_exabgp_version() {
+	docker exec exabgp_exporter env | grep EXABGP | cut -d '=' -f 2
+}
+
 get_exabgp_metrics() {
 	local port=${1:-9576}
 	docker exec exabgp_exporter curl -s http://localhost:${port}/metrics | grep exabgp
