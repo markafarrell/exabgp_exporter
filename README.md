@@ -1,19 +1,14 @@
 # exabgp_exporter
 
-![CircleCI](https://img.shields.io/circleci/project/github/lusis/exabgp_exporter/master.svg?style=for-the-badge)
-
 This is a prometheus exporter for exabgp. It currently works with the following exabgp versions (tested as part of CI):
 
-- 4.0.4
-- 4.0.5
-- 4.0.6
+- 4.2.21
+- 4.2.17
+- 4.2.8
+- 4.2.4
 - 4.0.8
-- 4.0.9
-- 4.0.10
 
 installed from pypi under python3.
-
-Additionally, we test can test exabgp master git but it is not run in CI
 
 ## Usage
 

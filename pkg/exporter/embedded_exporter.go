@@ -8,7 +8,7 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus"
 
-	"github.com/lusis/exabgp_exporter/pkg/exabgp"
+	"github.com/gizmoguy/exabgp_exporter/pkg/exabgp"
 	"github.com/prometheus/common/log"
 )
 

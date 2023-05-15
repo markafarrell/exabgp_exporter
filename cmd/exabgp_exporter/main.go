@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/lusis/exabgp_exporter/pkg/exporter"
+	"github.com/gizmoguy/exabgp_exporter/pkg/exporter"
 	"gopkg.in/alecthomas/kingpin.v2"
 
 	"github.com/prometheus/client_golang/prometheus"
