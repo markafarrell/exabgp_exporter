@@ -2,7 +2,6 @@ package text
 
 import (
 	"bufio"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
@@ -28,7 +27,7 @@ func testGetTotalLinesInFile(t *testing.T, f string) int {
 }
 
 func TestParseRibTestData(t *testing.T) {
-	file, err := ioutil.ReadFile(testRibDataFile)
+	file, err := os.ReadFile(testRibDataFile)
 	require.NoError(t, err)
 
 	totalLines := testGetTotalLinesInFile(t, testRibDataFile)

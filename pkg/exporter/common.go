@@ -1,6 +1,8 @@
 package exporter
 
 import (
+	"github.com/go-kit/log"
+
 	"github.com/prometheus/client_golang/prometheus"
 )
 
@@ -33,10 +35,11 @@ type BaseExporter struct {
 	up            prometheus.Gauge
 	totalScrapes  prometheus.Counter
 	parseFailures prometheus.Counter
+	logger        log.Logger
 }
 
 // NewBaseExporter returns a BaseExporter for embedding
-func NewBaseExporter() BaseExporter {
+func NewBaseExporter(logger log.Logger) BaseExporter {
 	return BaseExporter{
 		up: prometheus.NewGauge(prometheus.GaugeOpts{
 			Namespace: namespace,
@@ -53,6 +56,7 @@ func NewBaseExporter() BaseExporter {
 			Name:      parseName,
 			Help:      parseHelp,
 		}),
+		logger: logger,
 	}
 }
 

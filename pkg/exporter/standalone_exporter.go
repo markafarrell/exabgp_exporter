@@ -7,8 +7,9 @@ import (
 	"sync"
 
 	"github.com/gizmoguy/exabgp_exporter/pkg/exabgp/messages/text"
+	"github.com/go-kit/log"
+	"github.com/go-kit/log/level"
 	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/common/log"
 )
 
 var (
@@ -25,8 +26,8 @@ type StandaloneExporter struct {
 }
 
 // NewStandaloneExporter returns an initialized TextExporter.
-func NewStandaloneExporter(exabgpcli string, exabgproot string) (*StandaloneExporter, error) {
-	be := NewBaseExporter()
+func NewStandaloneExporter(exabgpcli string, exabgproot string, logger log.Logger) (*StandaloneExporter, error) {
+	be := NewBaseExporter(logger)
 	return &StandaloneExporter{
 		ExaBGPCLI:    exabgpcli,
 		ExaBGPRoot:   exabgproot,
@@ -48,7 +49,7 @@ func (e *StandaloneExporter) Collect(ch chan<- prometheus.Metric) {
 	e.BaseExporter.totalScrapes.Inc()
 	ribs, peers, err := e.scrape(ch)
 	if err != nil {
-		log.Error(err.Error())
+		level.Error(e.BaseExporter.logger).Log("err", err)
 	} else {
 		for _, u := range peers {
 			desc := newSummaryMetric("peer")
@@ -72,7 +73,11 @@ func (e *StandaloneExporter) Collect(ch chan<- prometheus.Metric) {
 				m := prometheus.MustNewConstMetric(desc, prometheus.GaugeValue, float64(1), r.PeerIP, r.PeerAS, r.LocalIP, r.LocalAS, v6u.NLRI, r.Family())
 				ch <- m
 			default:
-				log.Errorf("unable to handle family %s", r.Family())
+				level.Error(e.BaseExporter.logger).Log(
+					"msg", "unable to handle family",
+					"family", r.Family(),
+					"err", err,
+				)
 			}
 		}
 	}

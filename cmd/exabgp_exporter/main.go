@@ -5,12 +5,14 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/alecthomas/kingpin/v2"
 	"github.com/gizmoguy/exabgp_exporter/pkg/exporter"
-	"gopkg.in/alecthomas/kingpin.v2"
 
+	"github.com/go-kit/log/level"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"github.com/prometheus/common/log"
+	"github.com/prometheus/common/promlog"
+	"github.com/prometheus/common/promlog/flag"
 	"github.com/prometheus/common/version"
 )
 
@@ -30,33 +32,50 @@ func main() {
 		metricsPath   = kingpin.Flag("web.telemetry-path", "Path under which to expose metrics.").Default("/metrics").String()
 	)
 
-	log.AddFlags(kingpin.CommandLine)
+	promlogConfig := &promlog.Config{}
+
+	flag.AddFlags(kingpin.CommandLine, promlogConfig)
 	kingpin.Version(version.Print("exabgp_exporter"))
 	kingpin.HelpFlag.Short('h')
+	exporterMode := kingpin.Parse()
 
-	switch kingpin.Parse() {
+	logger := promlog.New(promlogConfig)
+
+	switch exporterMode {
 	case "standalone":
-		log.Infof("starting exabgp_exporter %s in standalone mode using '%s --root %s'", version.Info(), *exabgpcmd, *exabgproot)
-		log.Infof("build context: %s", version.BuildContext())
-		e, err := exporter.NewStandaloneExporter(*exabgpcmd, *exabgproot)
+		level.Info(logger).Log(
+			"msg", "Starting exabgp_exporter",
+			"version", version.Info(),
+			"mode", "standalone",
+			"args", *exabgpcmd,
+			"root", *exabgproot,
+		)
+		level.Info(logger).Log("buildcontext", version.BuildContext())
+		e, err := exporter.NewStandaloneExporter(*exabgpcmd, *exabgproot, logger)
 		if err != nil {
-			log.Fatal(err)
+			level.Error(logger).Log("err", err)
+			os.Exit(1)
 		}
 		prometheus.MustRegister(e)
 		prometheus.MustRegister(version.NewCollector("exabgp_exporter"))
 	case "stream":
-		log.Infof("starting exabgp_exporter %s in stream mode", version.Info())
-		log.Infof("build context: %s", version.BuildContext())
-		e, err := exporter.NewEmbeddedExporter()
+		level.Info(logger).Log(
+			"msg", "Starting exabgp_exporter",
+			"version", version.Info(),
+			"mode", "stream",
+		)
+		level.Info(logger).Log("buildcontext", version.BuildContext())
+		e, err := exporter.NewEmbeddedExporter(logger)
 		if err != nil {
-			log.Fatal(err)
+			level.Error(logger).Log("err", err)
+			os.Exit(1)
 		}
 		prometheus.MustRegister(e)
 		prometheus.MustRegister(version.NewCollector("exabgp_exporter"))
 		reader := bufio.NewReader(os.Stdin)
 		e.Run(reader)
 	}
-	log.Infoln("Listening on", *listenAddress)
+	level.Info(logger).Log("msg", "Listening on", "address", *listenAddress)
 	http.Handle(*metricsPath, promhttp.Handler())
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		_, _ = w.Write([]byte(`<html>
@@ -67,5 +86,8 @@ func main() {
              </body>
              </html>`))
 	})
-	log.Fatal(http.ListenAndServe(*listenAddress, nil))
+	if err := http.ListenAndServe(*listenAddress, nil); err != nil {
+		level.Error(logger).Log("err", err)
+		os.Exit(1)
+	}
 }
