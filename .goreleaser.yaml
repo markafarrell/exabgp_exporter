@@ -12,6 +12,7 @@ builds:
     goos:
       - linux
       - darwin
+      - windows
     tags:
       - netgo
     ldflags:
