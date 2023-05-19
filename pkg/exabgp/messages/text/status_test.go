@@ -1,7 +1,7 @@
 package text
 
 import (
-	"io/ioutil"
+	"os"
 	"path/filepath"
 	"testing"
 
@@ -11,7 +11,7 @@ import (
 var testSummaryDataFile = filepath.Join("testdata", "neighbor-summary.txt")
 
 func TestParseSummaryTestData(t *testing.T) {
-	file, err := ioutil.ReadFile(testSummaryDataFile)
+	file, err := os.ReadFile(testSummaryDataFile)
 	require.NoError(t, err)
 
 	totalLines := testGetTotalLinesInFile(t, testSummaryDataFile)
@@ -21,7 +21,7 @@ func TestParseSummaryTestData(t *testing.T) {
 }
 
 func TestParseSummaryDown(t *testing.T) {
-	file, err := ioutil.ReadFile(testSummaryDataFile)
+	file, err := os.ReadFile(testSummaryDataFile)
 	require.NoError(t, err)
 
 	totalLines := testGetTotalLinesInFile(t, testSummaryDataFile)

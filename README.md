@@ -28,8 +28,7 @@ If you want to embed the exporter inside exabgp you'll need to make the followin
 
 ```text
 process prometheus_exporter {
-        run /path/to/exabgp_exporter --log.format="logger:stderr?json=true" stream;
-	# alternately run /path/to/exabgp_exporter --log-format="logger:syslog?appname=exabgp_exporter" stream;
+        run /path/to/exabgp_exporter --log.format="json" stream;
         encoder json;
 }
 ```

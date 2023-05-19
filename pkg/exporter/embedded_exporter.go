@@ -6,10 +6,11 @@ import (
 	"io"
 	"sync"
 
+	"github.com/go-kit/log"
+	"github.com/go-kit/log/level"
 	"github.com/prometheus/client_golang/prometheus"
 
 	"github.com/gizmoguy/exabgp_exporter/pkg/exabgp"
-	"github.com/prometheus/common/log"
 )
 
 type EmbeddedExporter struct {
@@ -19,8 +20,8 @@ type EmbeddedExporter struct {
 	BaseExporter
 }
 
-func NewEmbeddedExporter() (*EmbeddedExporter, error) {
-	be := NewBaseExporter()
+func NewEmbeddedExporter(logger log.Logger) (*EmbeddedExporter, error) {
+	be := NewBaseExporter(logger)
 	be.up.Set(float64(1))
 	sm := prometheus.NewGaugeVec(prometheus.GaugeOpts{
 		Name:      "peer",
@@ -49,14 +50,14 @@ func (e *EmbeddedExporter) Run(reader *bufio.Reader) {
 		for {
 			line, _, err := reader.ReadLine()
 			if err != nil && err != io.EOF {
-				log.Errorf("unknown error: %s", err.Error())
+				level.Error(e.BaseExporter.logger).Log("msg", "unknown error", "err", err)
 				e.BaseExporter.parseFailures.Inc()
 				continue
 			}
 			evt, err := exabgp.ParseEvent(line)
 			if err != nil {
-				log.Errorf("unable to parse line: %s", err.Error())
-				log.Errorf("failed line: %s", line)
+				level.Error(e.BaseExporter.logger).Log("msg", "unable to parse line", "err", err)
+				level.Error(e.BaseExporter.logger).Log("msg", "line", line)
 				e.BaseExporter.parseFailures.Inc()
 				continue
 			}
