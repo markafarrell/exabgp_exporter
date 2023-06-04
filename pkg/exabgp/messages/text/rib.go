@@ -6,12 +6,110 @@ import (
 	"fmt"
 	"io"
 	"regexp"
+	"strconv"
+	"strings"
 )
 
 // line format:
 // neighbor <string> local-ip <string> local-as <int> peer-as <int> router-id <string> family-allowed in-open <afi> <safi> <details>
 var rxParseRIBLine = `^neighbor (?P<neighbor>\S+) local-ip (?P<local_ip>\S+) local-as (?P<local_as>\d+) peer-as (?P<peer_as>\d+) router-id (?P<router_id>\S+) family-allowed in-open (?P<afi>\S+) (?P<safi>\S+) (?P<details>.*)$`
 var rxParseUnicast = `^(?P<nlri>\S+) next-hop (?P<next_hop>\S+)(| (?P<attributes>.*))$`
+
+// regexp for parsing attributes
+var rxParseAttributeMed = `(?:^|\s+)med (?P<med>\d+)`
+var rxParseAttributeOrigin = `(?:^|\s+)origin (?P<origin>\S+)`
+var rxParseAttributeASPath = `(?:^|\s+)as-path \[ (?P<aspath>[^\]]+) \]`
+var rxParseAttributeClusterList = `(?:^|\s+)cluster-list \[ (?P<clusterlist>[^\]]+) \]`
+var rxParseAttributeCommunities = `(?:^|\s+)community \[ (?P<communities>[^\]]+) \]`
+var rxParseAttributeCommunity = `(?:^|\s+)community (?P<community>\S+)`
+var rxParseAttributeExtendedCommunities = `(?:^|\s+)extended-community \[ (?P<extendedcommunities>[^\]]+) \]`
+var rxParseAttributeExtendedCommunity = `(?:^|\s+)extended-community (?P<extendedcommunity>\S+)`
+var rxParseAttributeOriginatorID = `(?:^|\s+)originator-id (?P<originatorid>\S+)`
+var rxParseAttributeLocalPref = `(?:^|\s+)local-preference (?P<localpreference>\d+)`
+
+func parseAttributes(a string) Attribute {
+	var attribute Attribute
+
+	// parse MED
+	re := regexp.MustCompile(rxParseAttributeMed)
+	match := re.FindStringSubmatch(a)
+	if len(match) >= 1 {
+		if x, err := strconv.ParseInt(match[1], 10, 64); err == nil {
+			attribute.Med = x
+		}
+	}
+
+	// parse Origin
+	re = regexp.MustCompile(rxParseAttributeOrigin)
+	match = re.FindStringSubmatch(a)
+	if len(match) >= 1 {
+		attribute.Origin = match[1]
+	}
+
+	// parse AS-Path
+	re = regexp.MustCompile(rxParseAttributeASPath)
+	match = re.FindStringSubmatch(a)
+	if len(match) >= 1 {
+		var aspath []int
+		for _, asn := range strings.Split(match[1], " ") {
+			if x, err := strconv.ParseInt(asn, 10, 64); err == nil {
+				aspath = append(aspath, int(x))
+			}
+		}
+		attribute.ASPath = aspath
+	}
+
+	// parse Cluster List
+	re = regexp.MustCompile(rxParseAttributeClusterList)
+	match = re.FindStringSubmatch(a)
+	if len(match) >= 1 {
+		attribute.ClusterList = strings.Split(match[1], " ")
+	}
+
+	// parse Communities
+	re = regexp.MustCompile(rxParseAttributeCommunities)
+	match = re.FindStringSubmatch(a)
+	if len(match) >= 1 {
+		attribute.Community = strings.Split(match[1], " ")
+	} else {
+		re = regexp.MustCompile(rxParseAttributeCommunity)
+		match = re.FindStringSubmatch(a)
+		if len(match) >= 1 {
+			attribute.Community = []string{match[1]}
+		}
+	}
+
+	// parse Extended Communities
+	re = regexp.MustCompile(rxParseAttributeExtendedCommunities)
+	match = re.FindStringSubmatch(a)
+	if len(match) >= 1 {
+		attribute.ExtendedCommunity = strings.Split(match[1], " ")
+	} else {
+		re = regexp.MustCompile(rxParseAttributeExtendedCommunity)
+		match = re.FindStringSubmatch(a)
+		if len(match) >= 1 {
+			attribute.ExtendedCommunity = []string{match[1]}
+		}
+	}
+
+	// parse Originator ID
+	re = regexp.MustCompile(rxParseAttributeOriginatorID)
+	match = re.FindStringSubmatch(a)
+	if len(match) >= 1 {
+		attribute.OriginatorID = match[1]
+	}
+
+	// parse Local Preference
+	re = regexp.MustCompile(rxParseAttributeLocalPref)
+	match = re.FindStringSubmatch(a)
+	if len(match) >= 1 {
+		if x, err := strconv.ParseInt(match[1], 10, 64); err == nil {
+			attribute.LocalPreference = int(x)
+		}
+	}
+
+	return attribute
+}
 
 func parseUnicastLine(s string) (map[string]string, error) {
 	md := make(map[string]string)
@@ -116,7 +214,7 @@ func (m *RIBMessage) IPv4Unicast() (*IPv4UnicastAnnounceTextMessage, error) {
 	}
 	nm.NLRI = res["nlri"]
 	nm.NextHop = res["next_hop"]
-	nm.Attributes = res["attributes"]
+	nm.Attributes = parseAttributes(res["attributes"])
 	return nm, nil
 }
 
@@ -137,7 +235,7 @@ func (m *RIBMessage) IPv6Unicast() (*IPv6UnicastAnnounceTextMessage, error) {
 	}
 	nm.NLRI = res["nlri"]
 	nm.NextHop = res["next_hop"]
-	nm.Attributes = res["attributes"]
+	nm.Attributes = parseAttributes(res["attributes"])
 	return nm, nil
 }
 
@@ -146,11 +244,23 @@ func (m *RIBMessage) IPv6Flow() (*IPv6FlowAnnounceTextMessage, error) {
 	return nil, nil
 }
 
+// Attribute represent BGP attributes for a message
+type Attribute struct {
+	Med               int64
+	ExtendedCommunity []string
+	Community         []string
+	ASPath            []int
+	OriginatorID      string
+	LocalPreference   int
+	Origin            string
+	ClusterList       []string
+}
+
 // IPv4UnicastAnnounceTextMessage represents an ipv4-unicast announce in a text-based encoded exabgp message
 type IPv4UnicastAnnounceTextMessage struct {
 	NLRI       string
 	NextHop    string
-	Attributes string
+	Attributes Attribute
 }
 
 // IPv4MplsVPNAnnounceTextMessage represents an ipv4-mpls-vpn announce in a text-based encoded exabgp message
@@ -181,7 +291,7 @@ type IPv4FlowAnnounceTextMessage struct {
 type IPv6UnicastAnnounceTextMessage struct {
 	NLRI       string
 	NextHop    string
-	Attributes string
+	Attributes Attribute
 }
 
 // IPv6MplsVPNAnnounceTextMessage represents an ipv6-mpls-vpn announce in a text-based encoded exabgp message

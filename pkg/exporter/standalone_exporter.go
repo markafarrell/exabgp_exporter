@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"fmt"
 	"os/exec"
+	"strconv"
+	"strings"
 	"sync"
 
 	"github.com/gizmoguy/exabgp_exporter/pkg/exabgp/messages/text"
@@ -49,7 +51,7 @@ func (e *StandaloneExporter) Collect(ch chan<- prometheus.Metric) {
 	e.BaseExporter.totalScrapes.Inc()
 	ribs, peers, err := e.scrape(ch)
 	if err != nil {
-		level.Error(e.BaseExporter.logger).Log("err", err)
+		level.Error(e.BaseExporter.logger).Log("err", err) // nolint:errcheck
 	} else {
 		for _, u := range peers {
 			desc := newSummaryMetric("peer")
@@ -65,14 +67,43 @@ func (e *StandaloneExporter) Collect(ch chan<- prometheus.Metric) {
 			case "ipv4 unicast":
 				v4u, _ := r.IPv4Unicast()
 				desc := newRibMetric("route")
-				m := prometheus.MustNewConstMetric(desc, prometheus.GaugeValue, float64(1), r.PeerIP, r.PeerAS, r.LocalIP, r.LocalAS, v4u.NLRI, r.Family())
+
+				// Transform ASPath to string
+				asPathLines := []string{}
+				for _, communityAS := range v4u.Attributes.ASPath {
+					asPathLines = append(asPathLines, strconv.Itoa(communityAS))
+				}
+
+				m := prometheus.MustNewConstMetric(
+					desc, prometheus.GaugeValue, float64(1), r.PeerIP, r.PeerAS,
+					r.LocalIP, r.LocalAS, v4u.NLRI, r.Family(),
+					strconv.Itoa(int(v4u.Attributes.Med)),
+					strconv.Itoa(v4u.Attributes.LocalPreference),
+					strings.Join(asPathLines, " "),
+					strings.Join(v4u.Attributes.Community, " "),
+				)
 				ch <- m
 			case "ipv6 unicast":
 				v6u, _ := r.IPv6Unicast()
 				desc := newRibMetric("route")
-				m := prometheus.MustNewConstMetric(desc, prometheus.GaugeValue, float64(1), r.PeerIP, r.PeerAS, r.LocalIP, r.LocalAS, v6u.NLRI, r.Family())
+
+				// Transform ASPath to string
+				asPathLines := []string{}
+				for _, communityAS := range v6u.Attributes.ASPath {
+					asPathLines = append(asPathLines, strconv.Itoa(communityAS))
+				}
+
+				m := prometheus.MustNewConstMetric(
+					desc, prometheus.GaugeValue, float64(1), r.PeerIP, r.PeerAS,
+					r.LocalIP, r.LocalAS, v6u.NLRI, r.Family(),
+					strconv.Itoa(int(v6u.Attributes.Med)),
+					strconv.Itoa(v6u.Attributes.LocalPreference),
+					strings.Join(asPathLines, " "),
+					strings.Join(v6u.Attributes.Community, " "),
+				)
 				ch <- m
 			default:
+				// nolint:errcheck
 				level.Error(e.BaseExporter.logger).Log(
 					"msg", "unable to handle family",
 					"family", r.Family(),

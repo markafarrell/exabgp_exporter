@@ -4,6 +4,8 @@ import (
 	"bufio"
 	"fmt"
 	"io"
+	"strconv"
+	"strings"
 	"sync"
 
 	"github.com/go-kit/log"
@@ -23,6 +25,7 @@ type EmbeddedExporter struct {
 func NewEmbeddedExporter(logger log.Logger) (*EmbeddedExporter, error) {
 	be := NewBaseExporter(logger)
 	be.up.Set(float64(1))
+
 	sm := prometheus.NewGaugeVec(prometheus.GaugeOpts{
 		Name:      "peer",
 		Namespace: namespace,
@@ -35,6 +38,7 @@ func NewEmbeddedExporter(logger log.Logger) (*EmbeddedExporter, error) {
 		Subsystem: "state",
 		Help:      ribHelp,
 	}, ribLabelNames)
+
 	prometheus.MustRegister(sm)
 	prometheus.MustRegister(rm)
 	return &EmbeddedExporter{
@@ -50,14 +54,19 @@ func (e *EmbeddedExporter) Run(reader *bufio.Reader) {
 		for {
 			line, _, err := reader.ReadLine()
 			if err != nil && err != io.EOF {
-				level.Error(e.BaseExporter.logger).Log("msg", "unknown error", "err", err)
+				// nolint:errcheck
+				level.Error(e.BaseExporter.logger).Log(
+					"msg", "unknown error", "err", err,
+				)
 				e.BaseExporter.parseFailures.Inc()
 				continue
 			}
 			evt, err := exabgp.ParseEvent(line)
 			if err != nil {
-				level.Error(e.BaseExporter.logger).Log("msg", "unable to parse line", "err", err)
-				level.Error(e.BaseExporter.logger).Log("msg", "line", line)
+				// nolint:errcheck
+				level.Error(e.BaseExporter.logger).Log(
+					"msg", "unable to parse line", "err", err, "line", line,
+				)
 				e.BaseExporter.parseFailures.Inc()
 				continue
 			}
@@ -77,6 +86,10 @@ func (e *EmbeddedExporter) Run(reader *bufio.Reader) {
 					labels["local_ip"] = evt.Self.IP
 					labels["local_asn"] = fmt.Sprintf("%d", evt.Self.ASN)
 					for _, v := range announcements.IPV4Unicast {
+						labels["communities"] = communityToString(v.Attributes.Community)
+						labels["as_path"] = asPathToString(v.Attributes.ASPath)
+						labels["local_preference"] = strconv.Itoa(v.Attributes.LocalPreference)
+						labels["med"] = strconv.Itoa(int(v.Attributes.Med))
 						labels["family"] = "ipv4 unicast"
 						for _, r := range v.NLRI {
 							labels["nlri"] = r
@@ -84,6 +97,10 @@ func (e *EmbeddedExporter) Run(reader *bufio.Reader) {
 						}
 					}
 					for _, v := range announcements.IPV6Unicast {
+						labels["communities"] = communityToString(v.Attributes.Community)
+						labels["as_path"] = asPathToString(v.Attributes.ASPath)
+						labels["local_preference"] = strconv.Itoa(v.Attributes.LocalPreference)
+						labels["med"] = strconv.Itoa(int(v.Attributes.Med))
 						labels["family"] = "ipv6 unicast"
 						for _, r := range v.NLRI {
 							labels["nlri"] = r
@@ -96,6 +113,10 @@ func (e *EmbeddedExporter) Run(reader *bufio.Reader) {
 					labels["local_ip"] = evt.Self.IP
 					labels["local_asn"] = fmt.Sprintf("%d", evt.Self.ASN)
 					for _, w := range withdraws.IPv4Unicast {
+						labels["communities"] = communityToString(w.Attributes.Community)
+						labels["as_path"] = asPathToString(w.Attributes.ASPath)
+						labels["local_preference"] = strconv.Itoa(w.Attributes.LocalPreference)
+						labels["med"] = strconv.Itoa(int(w.Attributes.Med))
 						for _, r := range w.NLRI {
 							labels["family"] = "ipv4 unicast"
 							labels["nlri"] = r
@@ -103,6 +124,10 @@ func (e *EmbeddedExporter) Run(reader *bufio.Reader) {
 						}
 					}
 					for _, w := range withdraws.IPv6Unicast {
+						labels["communities"] = communityToString(w.Attributes.Community)
+						labels["as_path"] = asPathToString(w.Attributes.ASPath)
+						labels["local_preference"] = strconv.Itoa(w.Attributes.LocalPreference)
+						labels["med"] = strconv.Itoa(int(w.Attributes.Med))
 						for _, r := range w.NLRI {
 							labels["family"] = "ipv6 unicast"
 							labels["nlri"] = r
@@ -130,4 +155,26 @@ func (e *EmbeddedExporter) Collect(ch chan<- prometheus.Metric) {
 // It implements prometheus.Collector
 func (e *EmbeddedExporter) Describe(ch chan<- *prometheus.Desc) {
 	e.BaseExporter.Describe(ch)
+}
+
+// Transform communities to string
+func communityToString(communityAttribute [][]int) string {
+	communityStrings := []string{}
+	for _, community := range communityAttribute {
+		// #0 is ASN and #1 is community value
+		communityString := fmt.Sprintf("%d:%d", community[0], community[1])
+		communityStrings = append(communityStrings, communityString)
+	}
+
+	return strings.Join(communityStrings, " ")
+}
+
+// Transform ASPath to string
+func asPathToString(asPathAttribute []int) string {
+	asPathStrings := []string{}
+	for _, communityAS := range asPathAttribute {
+		asPathStrings = append(asPathStrings, strconv.Itoa(communityAS))
+	}
+
+	return strings.Join(asPathStrings, " ")
 }

@@ -43,6 +43,7 @@ func main() {
 
 	switch exporterMode {
 	case "standalone":
+		// nolint:errcheck
 		level.Info(logger).Log(
 			"msg", "Starting exabgp_exporter",
 			"version", version.Info(),
@@ -50,24 +51,25 @@ func main() {
 			"args", *exabgpcmd,
 			"root", *exabgproot,
 		)
-		level.Info(logger).Log("buildcontext", version.BuildContext())
+		level.Info(logger).Log("buildcontext", version.BuildContext()) // nolint:errcheck
 		e, err := exporter.NewStandaloneExporter(*exabgpcmd, *exabgproot, logger)
 		if err != nil {
-			level.Error(logger).Log("err", err)
+			level.Error(logger).Log("err", err) // nolint:errcheck
 			os.Exit(1)
 		}
 		prometheus.MustRegister(e)
 		prometheus.MustRegister(version.NewCollector("exabgp_exporter"))
 	case "stream":
+		// nolint:errcheck
 		level.Info(logger).Log(
 			"msg", "Starting exabgp_exporter",
 			"version", version.Info(),
 			"mode", "stream",
 		)
-		level.Info(logger).Log("buildcontext", version.BuildContext())
+		level.Info(logger).Log("buildcontext", version.BuildContext()) // nolint:errcheck
 		e, err := exporter.NewEmbeddedExporter(logger)
 		if err != nil {
-			level.Error(logger).Log("err", err)
+			level.Error(logger).Log("err", err) // nolint:errcheck
 			os.Exit(1)
 		}
 		prometheus.MustRegister(e)
@@ -75,7 +77,7 @@ func main() {
 		reader := bufio.NewReader(os.Stdin)
 		e.Run(reader)
 	}
-	level.Info(logger).Log("msg", "Listening on", "address", *listenAddress)
+	level.Info(logger).Log("msg", "Listening on", "address", *listenAddress) // nolint:errcheck
 	http.Handle(*metricsPath, promhttp.Handler())
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		_, _ = w.Write([]byte(`<html>
@@ -87,7 +89,7 @@ func main() {
              </html>`))
 	})
 	if err := http.ListenAndServe(*listenAddress, nil); err != nil {
-		level.Error(logger).Log("err", err)
+		level.Error(logger).Log("err", err) // nolint:errcheck
 		os.Exit(1)
 	}
 }
