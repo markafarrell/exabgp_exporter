@@ -17,6 +17,14 @@ builds:
       - netbsd
       - openbsd
       - windows
+    goarch:
+      - 386
+      - amd64
+      - arm
+      - arm64
+    goarm:
+      - 6
+      - 7
     tags:
       - netgo
     ldflags:
