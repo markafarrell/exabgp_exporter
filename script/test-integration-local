@@ -11,17 +11,17 @@ if ! script/build-docker; then
 	exit 1
 fi
 
-for v in 4 5 6 8 9 10; do
-	EXABGP_VERSION=4.0.$v script/run-docker
-	sleep 10
-	echo "testing version 4.0.$v"
+for v in "4.0.8" "4.2.4" "4.2.8" "4.2.17" "4.2.21"; do
+	EXABGP_VERSION="${v}" script/run-docker
+	sleep 30
+	echo "testing version ${v}"
 	tmplog=$(mktemp -u -t exabgp_exporter_XXXXXXXXXX)
 	if ! test/libs/bats/bin/bats -t test/*.bats > "${tmplog}"; then
-		echo "failed testing 4.0.$v"
+		echo "failed testing ${v}"
 		cat "${tmplog}"
 		script/stop-docker
 		continue
 	fi
-	docker logs exabgp_exporter > /tmp/exabgp_export_docker_4_0_$v.log
+	docker logs exabgp_exporter > "/tmp/exabgp_export_docker_${v}.log"
 	script/stop-docker
 done
