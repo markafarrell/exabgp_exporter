@@ -54,14 +54,17 @@ func (e *EmbeddedExporter) Run(reader *bufio.Reader) {
 		for {
 			line, _, err := reader.ReadLine()
 			if err != nil && err != io.EOF {
-				level.Error(e.BaseExporter.logger).Log("msg", "unknown error", "err", err)
+				level.Error(e.BaseExporter.logger).Log(
+					"msg", "unknown error", "err", err,
+				)
 				e.BaseExporter.parseFailures.Inc()
 				continue
 			}
 			evt, err := exabgp.ParseEvent(line)
 			if err != nil {
-				level.Error(e.BaseExporter.logger).Log("msg", "unable to parse line", "err", err)
-				level.Error(e.BaseExporter.logger).Log("msg", "line", line)
+				level.Error(e.BaseExporter.logger).Log(
+					"msg", "unable to parse line", "err", err, "line", line,
+				)
 				e.BaseExporter.parseFailures.Inc()
 				continue
 			}
