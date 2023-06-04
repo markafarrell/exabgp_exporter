@@ -54,6 +54,7 @@ func (e *EmbeddedExporter) Run(reader *bufio.Reader) {
 		for {
 			line, _, err := reader.ReadLine()
 			if err != nil && err != io.EOF {
+				// nolint:errcheck
 				level.Error(e.BaseExporter.logger).Log(
 					"msg", "unknown error", "err", err,
 				)
@@ -62,6 +63,7 @@ func (e *EmbeddedExporter) Run(reader *bufio.Reader) {
 			}
 			evt, err := exabgp.ParseEvent(line)
 			if err != nil {
+				// nolint:errcheck
 				level.Error(e.BaseExporter.logger).Log(
 					"msg", "unable to parse line", "err", err, "line", line,
 				)

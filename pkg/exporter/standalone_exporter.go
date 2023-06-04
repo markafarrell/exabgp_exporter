@@ -51,7 +51,7 @@ func (e *StandaloneExporter) Collect(ch chan<- prometheus.Metric) {
 	e.BaseExporter.totalScrapes.Inc()
 	ribs, peers, err := e.scrape(ch)
 	if err != nil {
-		level.Error(e.BaseExporter.logger).Log("err", err)
+		level.Error(e.BaseExporter.logger).Log("err", err) // nolint:errcheck
 	} else {
 		for _, u := range peers {
 			desc := newSummaryMetric("peer")
@@ -103,6 +103,7 @@ func (e *StandaloneExporter) Collect(ch chan<- prometheus.Metric) {
 				)
 				ch <- m
 			default:
+				// nolint:errcheck
 				level.Error(e.BaseExporter.logger).Log(
 					"msg", "unable to handle family",
 					"family", r.Family(),
