@@ -7,7 +7,7 @@ on:
 
 jobs:
   goreleaser:
-    name: Build with goreleaer
+    name: Build with goreleaser
     runs-on: ubuntu-latest
     permissions:
       contents: write
