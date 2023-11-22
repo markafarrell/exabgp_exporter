@@ -31,7 +31,7 @@ jobs:
         with:
           distribution: goreleaser
           version: latest
-          args: release --clean --skip-publish --snapshot
+          args: release --clean --skip=publish --snapshot
         env:
           BUILD_USER: ${{ github.actor }} (via Github Actions)
 
