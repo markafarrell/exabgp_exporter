@@ -45,6 +45,9 @@ jobs:
       - name: Lint
         uses: golangci/golangci-lint-action@v3
 
+      - name: Govulncheck
+        uses: golang/govulncheck-action@v1
+
   unit-tests:
     name: Unit tests
     runs-on: ubuntu-latest
