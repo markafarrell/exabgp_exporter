@@ -88,8 +88,9 @@ jobs:
           trap "go-junit-report <${TEST_RESULTS}/go-test.out > ${TEST_RESULTS}/go-test-report.xml" EXIT
           script/test | tee ${TEST_RESULTS}/go-test.out
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
+          name: "unit-test-results"
           path: "/tmp/test-results"
 
   integration-tests:
@@ -132,6 +133,7 @@ jobs:
       - name: Stop docker container
         run: script/stop-docker
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
+          name: "exabgp-${{ matrix.exabgp_version }}-test-results"
           path: "/tmp/test-results"
