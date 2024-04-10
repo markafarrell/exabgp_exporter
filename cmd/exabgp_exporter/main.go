@@ -10,6 +10,7 @@ import (
 
 	"github.com/go-kit/log/level"
 	"github.com/prometheus/client_golang/prometheus"
+	versioncollector "github.com/prometheus/client_golang/prometheus/collectors/version"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/prometheus/common/promlog"
 	"github.com/prometheus/common/promlog/flag"
@@ -58,7 +59,7 @@ func main() {
 			os.Exit(1)
 		}
 		prometheus.MustRegister(e)
-		prometheus.MustRegister(version.NewCollector("exabgp_exporter"))
+		prometheus.MustRegister(versioncollector.NewCollector("exabgp_exporter"))
 	case "stream":
 		// nolint:errcheck
 		level.Info(logger).Log(
@@ -73,7 +74,7 @@ func main() {
 			os.Exit(1)
 		}
 		prometheus.MustRegister(e)
-		prometheus.MustRegister(version.NewCollector("exabgp_exporter"))
+		prometheus.MustRegister(versioncollector.NewCollector("exabgp_exporter"))
 		reader := bufio.NewReader(os.Stdin)
 		e.Run(reader)
 	}
