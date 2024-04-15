@@ -2,6 +2,8 @@ module github.com/gizmoguy/exabgp_exporter
 
 go 1.21
 
+toolchain go1.22.2
+
 require (
 	github.com/alecthomas/kingpin/v2 v2.4.0
 	github.com/go-kit/log v0.2.1
