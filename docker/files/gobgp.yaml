@@ -1,14 +1,14 @@
 global:
     config:
-        as: 64496
+        as: 67496
         router-id: 2.2.2.2
         port: 2179
         local-address-list: ["127.0.0.1"]
 
 neighbors:
     - config:
-        neighbor-address: 127.0.0.1 
-        peer-as: 64496
+        neighbor-address: 127.0.0.1
+        peer-as: 67496
       transport:
         config:
           passive-mode: true
@@ -21,7 +21,7 @@ neighbors:
         config:
           hold-time: 180
       add-paths:
-        config:      
+        config:
           receive: true
       afi-safis:
         - config:

@@ -111,7 +111,7 @@ Tracks scrapes of the exporter
 ```text
 # HELP exabgp_state_peer shows the state of a bgp peer
 # TYPE exabgp_state_peer gauge
-exabgp_state_peer{peer_asn="64496",peer_ip="127.0.0.1"} 1
+exabgp_state_peer{peer_asn="67496",peer_ip="127.0.0.1"} 1
 ```
 
 Tracks the connectivity to BGP peers from exabgp. `1` for up. `0` for down.
@@ -122,7 +122,7 @@ In `standalone` mode, this is a result of calling `exabgpcli show neighbor summa
 ```text
 # HELP exabgp_state_route shows the state of a given nlri
 # TYPE exabgp_state_route gauge
-exabgp_state_route{family="ipv4 unicast",local_asn="64496",local_ip="127.0.0.1",nlri="192.168.88.0/29",peer_asn="64496",peer_ip="127.0.0.1"} 0
+exabgp_state_route{family="ipv4 unicast",local_asn="67496",local_ip="127.0.0.1",nlri="192.168.88.0/29",peer_asn="67496",peer_ip="127.0.0.1"} 0
 ```
 
 Tracks the state of a given nlri per family (formatted from `afi` + `safi`) for a given peer+local combination.
