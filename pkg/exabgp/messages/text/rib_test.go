@@ -39,14 +39,14 @@ func TestParseRibTestData(t *testing.T) {
 }
 
 func TestParseRibString(t *testing.T) {
-	var testString = `neighbor 127.0.0.1 local-ip 127.0.0.1 local-as 67496 peer-as 67496 router-id 1.1.1.1 family-allowed in-open ipv4 unicast 192.168.88.248/29 next-hop self med 100`
+	var testString = `neighbor 127.0.0.1 local-ip 127.0.0.1 local-as 64496 peer-as 64496 router-id 1.1.1.1 family-allowed in-open ipv4 unicast 192.168.88.248/29 next-hop self med 100`
 	m, err := RibEntryFromString(testString)
 	require.NoError(t, err)
 	require.NotNil(t, m)
 	require.Equal(t, "127.0.0.1", m.PeerIP)
-	require.Equal(t, "67496", m.PeerAS)
+	require.Equal(t, "64496", m.PeerAS)
 	require.Equal(t, "127.0.0.1", m.LocalIP)
-	require.Equal(t, "67496", m.LocalAS)
+	require.Equal(t, "64496", m.LocalAS)
 	require.Equal(t, "ipv4", m.AFI)
 	require.Equal(t, "unicast", m.SAFI)
 	require.Equal(t, "192.168.88.248/29 next-hop self med 100", m.Details)
@@ -54,7 +54,7 @@ func TestParseRibString(t *testing.T) {
 }
 
 func TestParseIPv4UnicastFull(t *testing.T) {
-	var testString = `neighbor 127.0.0.1 local-ip 127.0.0.1 local-as 67496 peer-as 67496 router-id 1.1.1.1 family-allowed in-open ipv4 unicast 192.168.88.248/29 next-hop self med 100`
+	var testString = `neighbor 127.0.0.1 local-ip 127.0.0.1 local-as 64496 peer-as 64496 router-id 1.1.1.1 family-allowed in-open ipv4 unicast 192.168.88.248/29 next-hop self med 100`
 	m, err := RibEntryFromString(testString)
 	require.NoError(t, err)
 	require.NotNil(t, m)
@@ -67,7 +67,7 @@ func TestParseIPv4UnicastFull(t *testing.T) {
 }
 
 func TestParseIPv4UnicastNoAttributes(t *testing.T) {
-	var testString = `neighbor 127.0.0.1 local-ip 127.0.0.1 local-as 67496 peer-as 67496 router-id 1.1.1.1 family-allowed in-open ipv4 unicast 192.168.88.248/29 next-hop self`
+	var testString = `neighbor 127.0.0.1 local-ip 127.0.0.1 local-as 64496 peer-as 64496 router-id 1.1.1.1 family-allowed in-open ipv4 unicast 192.168.88.248/29 next-hop self`
 	m, err := RibEntryFromString(testString)
 	require.NoError(t, err)
 	require.NotNil(t, m)
@@ -80,7 +80,7 @@ func TestParseIPv4UnicastNoAttributes(t *testing.T) {
 }
 
 func TestParseIPv4UnicastFullAttributesNoList(t *testing.T) {
-	var testString = `neighbor 127.0.0.1 local-ip 127.0.0.1 local-as 67496 peer-as 67496 router-id 1.1.1.1 family-allowed in-open ipv4 unicast 192.168.88.248/29 next-hop self origin igp as-path [ 30740 ] med 2000 local-preference 100 community 54591:123 originator-id 192.168.22.1 cluster-list [ 3.3.3.3 ] extended-community target:54591:6`
+	var testString = `neighbor 127.0.0.1 local-ip 127.0.0.1 local-as 64496 peer-as 64496 router-id 1.1.1.1 family-allowed in-open ipv4 unicast 192.168.88.248/29 next-hop self origin igp as-path [ 30740 ] med 2000 local-preference 100 community 54591:123 originator-id 192.168.22.1 cluster-list [ 3.3.3.3 ] extended-community target:54591:6`
 	m, err := RibEntryFromString(testString)
 	require.NoError(t, err)
 	require.NotNil(t, m)
@@ -100,7 +100,7 @@ func TestParseIPv4UnicastFullAttributesNoList(t *testing.T) {
 }
 
 func TestParseIPv4UnicastFullAttributesList(t *testing.T) {
-	var testString = `neighbor 127.0.0.1 local-ip 127.0.0.1 local-as 67496 peer-as 67496 router-id 1.1.1.1 family-allowed in-open ipv4 unicast 192.168.88.248/29 next-hop self origin igp as-path [ 30740 30740 30740 30740 30740 30740 30740 ] med 2000 local-preference 100 community 54591:123 originator-id 192.168.22.1 cluster-list [ 3.3.3.3 192.168.201.1 ] extended-community [ target:54591:6 l2info:19:0:1500:111 ]`
+	var testString = `neighbor 127.0.0.1 local-ip 127.0.0.1 local-as 64496 peer-as 64496 router-id 1.1.1.1 family-allowed in-open ipv4 unicast 192.168.88.248/29 next-hop self origin igp as-path [ 30740 30740 30740 30740 30740 30740 30740 ] med 2000 local-preference 100 community 54591:123 originator-id 192.168.22.1 cluster-list [ 3.3.3.3 192.168.201.1 ] extended-community [ target:54591:6 l2info:19:0:1500:111 ]`
 	m, err := RibEntryFromString(testString)
 	require.NoError(t, err)
 	require.NotNil(t, m)
@@ -120,14 +120,14 @@ func TestParseIPv4UnicastFullAttributesList(t *testing.T) {
 }
 
 func TestParseIPv6RibString(t *testing.T) {
-	var testString = `neighbor 2001::2 local-ip 2001::1 local-as 67496 peer-as 67496 router-id 1.1.1.1 family-allowed in-open ipv6 unicast 2001:db8:1000::/64 next-hop self med 100`
+	var testString = `neighbor 2001::2 local-ip 2001::1 local-as 64496 peer-as 64496 router-id 1.1.1.1 family-allowed in-open ipv6 unicast 2001:db8:1000::/64 next-hop self med 100`
 	m, err := RibEntryFromString(testString)
 	require.NoError(t, err)
 	require.NotNil(t, m)
 	require.Equal(t, "2001::2", m.PeerIP)
-	require.Equal(t, "67496", m.PeerAS)
+	require.Equal(t, "64496", m.PeerAS)
 	require.Equal(t, "2001::1", m.LocalIP)
-	require.Equal(t, "67496", m.LocalAS)
+	require.Equal(t, "64496", m.LocalAS)
 	require.Equal(t, "ipv6", m.AFI)
 	require.Equal(t, "unicast", m.SAFI)
 	require.Equal(t, "2001:db8:1000::/64 next-hop self med 100", m.Details)
@@ -135,7 +135,7 @@ func TestParseIPv6RibString(t *testing.T) {
 }
 
 func TestParseIPv6UnicastFull(t *testing.T) {
-	var testString = `neighbor 2001::2 local-ip 2001::1 local-as 67496 peer-as 67496 router-id 1.1.1.1 family-allowed in-open ipv6 unicast 2001:db8:1000::/64 next-hop self med 100`
+	var testString = `neighbor 2001::2 local-ip 2001::1 local-as 64496 peer-as 64496 router-id 1.1.1.1 family-allowed in-open ipv6 unicast 2001:db8:1000::/64 next-hop self med 100`
 	m, err := RibEntryFromString(testString)
 	require.NoError(t, err)
 	require.NotNil(t, m)
@@ -148,7 +148,7 @@ func TestParseIPv6UnicastFull(t *testing.T) {
 }
 
 func TestParseIPv6UnicastNoAttributes(t *testing.T) {
-	var testString = `neighbor 2001::2 local-ip 2001::1 local-as 67496 peer-as 67496 router-id 1.1.1.1 family-allowed in-open ipv6 unicast 2001:db8:1000::/64 next-hop self`
+	var testString = `neighbor 2001::2 local-ip 2001::1 local-as 64496 peer-as 64496 router-id 1.1.1.1 family-allowed in-open ipv6 unicast 2001:db8:1000::/64 next-hop self`
 	m, err := RibEntryFromString(testString)
 	require.NoError(t, err)
 	require.NotNil(t, m)
