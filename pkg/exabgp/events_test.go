@@ -231,9 +231,10 @@ func TestIPv6WithdrawMulti(t *testing.T) {
 
 func TestPeerState(t *testing.T) {
 	tc := map[string]string{
-		"up":        `{ "exabgp": "4.0.1", "time": 1554851049.928668, "host" : "node1", "pid" : 8059, "ppid" : 1, "counter": 25, "type": "state", "neighbor": { "address": { "local": "192.168.1.184", "peer": "192.168.1.2" }, "asn": { "local": 64496, "peer": 64496 } , "state": "up" } }`,
-		"down":      `{ "exabgp": "4.0.1", "time": 1554851049.9405053, "host" : "node1", "pid" : 8059, "ppid" : 1, "counter": 26, "type": "state", "neighbor": { "address": { "local": "192.168.1.184", "peer": "192.168.1.2" }, "asn": { "local": 64496, "peer": 64496 } , "state": "down", "reason": "peer reset, message () error()" } }`,
-		"connected": `{ "exabgp": "4.0.1", "time": 1554851063.9655015, "host" : "node1", "pid" : 8059, "ppid" : 1, "counter": 27, "type": "state", "neighbor": { "address": { "local": "192.168.1.184", "peer": "192.168.1.2" }, "asn": { "local": 64496, "peer": 64496 } , "state": "connected" } }`,
+		"up":         `{ "exabgp": "4.0.1", "time": 1554851049.928668, "host" : "node1", "pid" : 8059, "ppid" : 1, "counter": 25, "type": "state", "neighbor": { "address": { "local": "192.168.1.184", "peer": "192.168.1.2" }, "asn": { "local": 64496, "peer": 64496 } , "state": "up" } }`,
+		"up-big-asn": `{ "exabgp": "4.0.1", "time": 1554851049.928668, "host" : "node1", "pid" : 8059, "ppid" : 1, "counter": 25, "type": "state", "neighbor": { "address": { "local": "192.168.1.184", "peer": "192.168.1.2" }, "asn": { "local": 67496, "peer": 67496 } , "state": "up" } }`,
+		"down":       `{ "exabgp": "4.0.1", "time": 1554851049.9405053, "host" : "node1", "pid" : 8059, "ppid" : 1, "counter": 26, "type": "state", "neighbor": { "address": { "local": "192.168.1.184", "peer": "192.168.1.2" }, "asn": { "local": 64496, "peer": 64496 } , "state": "down", "reason": "peer reset, message () error()" } }`,
+		"connected":  `{ "exabgp": "4.0.1", "time": 1554851063.9655015, "host" : "node1", "pid" : 8059, "ppid" : 1, "counter": 27, "type": "state", "neighbor": { "address": { "local": "192.168.1.184", "peer": "192.168.1.2" }, "asn": { "local": 64496, "peer": 64496 } , "state": "connected" } }`,
 	}
 	for name, test := range tc {
 		t.Run(name, func(t *testing.T) {
